@@ -1,0 +1,25 @@
+{
+  "$schema": "https://static.modelcontextprotocol.io/schemas/2025-12-11/server.schema.json",
+  "name": "io.github.pepabo/colormeshop-mcp",
+  "title": "Color Me Shop MCP Server",
+  "description": "Official remote MCP server for Color Me Shop.",
+  "websiteUrl": "https://help.shop-pro.jp/hc/ja/articles/49646901116819",
+  "repository": {
+    "url": "https://github.com/pepabo/colormeshop-mcp",
+    "source": "github"
+  },
+  "version": "0.1.0",
+  "icons": [
+    {
+      "src": "https://pepabo.com/assets/images/news/services/colorme.svg",
+      "mimeType": "image/svg+xml",
+      "sizes": ["any"]
+    }
+  ],
+  "remotes": [
+    {
+      "type": "streamable-http",
+      "url": "https://agent.colorme.app/api/mcp"
+    }
+  ]
+}
