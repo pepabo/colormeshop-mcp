@@ -29,6 +29,7 @@
     "@modelcontextprotocol/sdk": "^1.27.1"
   },
   "scripts": {
+    "build": "echo 'no build step required'",
     "test": "node --test"
   }
 }
