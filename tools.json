@@ -1,0 +1,2764 @@
+{
+  "tools": [
+    {
+      "name": "getShop",
+      "description": "ショップ情報の取得  ショップ名などの基本的な情報を取得することができるAPIです。",
+      "inputSchema": {
+        "$schema": "http://json-schema.org/draft-07/schema#",
+        "type": "object",
+        "properties": {
+          "_dummy": {
+            "description": "Not used",
+            "type": "string"
+          }
+        },
+        "additionalProperties": false
+      },
+      "annotations": {
+        "readOnlyHint": true,
+        "destructiveHint": false,
+        "idempotentHint": true,
+        "openWorldHint": true
+      }
+    },
+    {
+      "name": "getSales",
+      "description": "受注データのリストを取得  受注データのリストを取得します。（日付が指定されていない場合は直近1週間分を取得します。）",
+      "inputSchema": {
+        "$schema": "http://json-schema.org/draft-07/schema#",
+        "type": "object",
+        "properties": {
+          "ids": {
+            "description": "受注IDで検索。カンマ区切りで複数指定可能",
+            "type": "string"
+          },
+          "after": {
+            "description": "指定日時以降の受注から検索。  `after` 未指定時は `before` の指定日時の7日前の0時、  `before` 未指定時は現在から7日前の0時がデフォルト値となります。 ",
+            "type": "string"
+          },
+          "before": {
+            "description": "指定日時以前の受注から検索",
+            "type": "string"
+          },
+          "make_date_min": {
+            "description": "`after`と同義",
+            "type": "string"
+          },
+          "make_date_max": {
+            "description": "`before`と同義",
+            "type": "string"
+          },
+          "update_date_min": {
+            "description": "指定日時以降に更新された受注から検索",
+            "type": "string"
+          },
+          "update_date_max": {
+            "description": "指定日時以前に更新された受注から検索",
+            "type": "string"
+          },
+          "customer_ids": {
+            "description": "購入した顧客IDで検索。カンマ区切りにすることで複数検索が可能",
+            "type": "string"
+          },
+          "customer_name": {
+            "description": "購入した顧客名で部分一致検索",
+            "type": "string"
+          },
+          "customer_furigana": {
+            "description": "購入した顧客フリガナがで部分一致検索",
+            "type": "string"
+          },
+          "customer_mail": {
+            "description": "購入した顧客メールアドレスで部分一致検索",
+            "type": "string"
+          },
+          "accepted_mail_state": {
+            "description": "受注メールの送信状態で検索  - `not_yet`: 未送信 - `sent`: 送信済み - `pass`: 送信しない ",
+            "type": "string",
+            "enum": [
+              "not_yet",
+              "sent",
+              "pass"
+            ]
+          },
+          "paid_mail_state": {
+            "description": "入金メールの送信状態で検索  - `not_yet`: 未送信 - `sent`: 送信済み - `pass`: 送信しない ",
+            "type": "string",
+            "enum": [
+              "not_yet",
+              "sent",
+              "pass"
+            ]
+          },
+          "delivered_mail_state": {
+            "description": "配送メールの送信状態で検索  - `not_yet`: 未送信 - `sent`: 送信済み - `pass`: 送信しない ",
+            "type": "string",
+            "enum": [
+              "not_yet",
+              "sent",
+              "pass"
+            ]
+          },
+          "mobile": {
+            "description": "`true`なら携帯からの受注のみ取得",
+            "type": "boolean"
+          },
+          "paid": {
+            "description": "`true`なら入金済みの受注のみ取得",
+            "type": "boolean"
+          },
+          "delivered": {
+            "description": "`true`なら配送済みの受注のみ取得",
+            "type": "boolean"
+          },
+          "canceled": {
+            "description": "`true`ならキャンセル済みの受注のみ取得",
+            "type": "boolean"
+          },
+          "payment_ids": {
+            "description": "使用された決済のIDで検索。カンマ区切りで複数指定可能",
+            "type": "string"
+          },
+          "fields": {
+            "description": "レスポンスJSONのキーをカンマ区切りで指定",
+            "type": "string"
+          },
+          "limit": {
+            "description": "レスポンスの件数を指定。指定がない場合は10。最大100",
+            "type": "integer",
+            "minimum": -9007199254740991,
+            "maximum": 9007199254740991
+          },
+          "offset": {
+            "description": "指定した数値+1件目以降のデータを返す",
+            "type": "integer",
+            "minimum": -9007199254740991,
+            "maximum": 9007199254740991
+          }
+        },
+        "additionalProperties": false
+      },
+      "annotations": {
+        "readOnlyHint": true,
+        "destructiveHint": false,
+        "idempotentHint": true,
+        "openWorldHint": true
+      }
+    },
+    {
+      "name": "statSale",
+      "description": "売上集計の取得  指定した基準日を起点に、3つの固定期間（基準日当日／基準日の7日前の日から基準日の終わりまで／基準日が属する月）の売上金額と売上件数をまとめて返します。  返却対象はこの3期間に限られ、任意の日数範囲や前月以前の月単位の集計には対応していません。",
+      "inputSchema": {
+        "$schema": "http://json-schema.org/draft-07/schema#",
+        "type": "object",
+        "properties": {
+          "make_date": {
+            "description": "集計の基準日。この日を起点に、以下の期間の売上金額と件数を返す。   - `amount_today` / `count_today`: 基準日当日の売上   - `amount_last_7days` / `count_last_7days`: 基準日の7日前の日から基準日の終わりまでの売上   - `amount_this_month` / `count_this_month`: 基準日が属する月の売上 形式は\"2017-04-12\"、\"2017/04/12\"など。指定しない場合は今日の日付が使われる。 ",
+            "type": "string"
+          }
+        },
+        "additionalProperties": false
+      },
+      "annotations": {
+        "readOnlyHint": true,
+        "destructiveHint": false,
+        "idempotentHint": true,
+        "openWorldHint": true
+      }
+    },
+    {
+      "name": "getSale",
+      "description": "受注データの取得",
+      "inputSchema": {
+        "$schema": "http://json-schema.org/draft-07/schema#",
+        "type": "object",
+        "properties": {
+          "sale_id": {
+            "type": "integer",
+            "minimum": -9007199254740991,
+            "maximum": 9007199254740991
+          }
+        },
+        "required": [
+          "sale_id"
+        ],
+        "additionalProperties": false
+      },
+      "annotations": {
+        "readOnlyHint": true,
+        "destructiveHint": false,
+        "idempotentHint": true,
+        "openWorldHint": true
+      }
+    },
+    {
+      "name": "updateSale",
+      "description": "受注データの更新  該当受注の決済がAmazon Pay、LINE Pay、または楽天ペイ（オンライン決済）である場合は、熨斗・メッセージカード・ラッピングの手数料を更新すると、決済金額が自動的に購入者に請求もしくは返金されます。  ただし、LINE Payの場合は、決済金額の変更は減額のみ行うことができます。",
+      "inputSchema": {
+        "$schema": "http://json-schema.org/draft-07/schema#",
+        "type": "object",
+        "properties": {
+          "sale_id": {
+            "type": "integer",
+            "minimum": -9007199254740991,
+            "maximum": 9007199254740991
+          },
+          "sale": {
+            "type": "object",
+            "properties": {
+              "paid": {
+                "description": "入金済みであるか否か",
+                "type": "boolean"
+              },
+              "point_state": {
+                "description": "ショップポイントの付与状態。`fixed`へ変更すると、購入者にショップポイントが付与される。`fixed`から別のステータスには変更できない また、受注が分割されている場合、子受注のショップポイント付与状態は変更することができません。  - `assumed`: 仮付与 - `fixed`: 確定済み - `cenceled`: キャンセル済み ",
+                "type": "string",
+                "enum": [
+                  "assumed",
+                  "fixed",
+                  "cenceled"
+                ]
+              },
+              "sale_deliveries": {
+                "type": "array",
+                "items": {
+                  "type": "object",
+                  "properties": {
+                    "id": {
+                      "description": "お届け先ID",
+                      "type": "integer",
+                      "minimum": -9007199254740991,
+                      "maximum": 9007199254740991
+                    },
+                    "account_id": {
+                      "description": "ショップアカウントID",
+                      "type": "string"
+                    },
+                    "sale_id": {
+                      "description": "売上ID",
+                      "type": "integer",
+                      "minimum": -9007199254740991,
+                      "maximum": 9007199254740991
+                    },
+                    "delivery_id": {
+                      "description": "使用された配送方法ID",
+                      "type": "integer",
+                      "minimum": -9007199254740991,
+                      "maximum": 9007199254740991
+                    },
+                    "detail_ids": {
+                      "description": "この配送に含まれる受注明細IDの配列",
+                      "type": "array",
+                      "items": {
+                        "type": "integer",
+                        "minimum": -9007199254740991,
+                        "maximum": 9007199254740991
+                      }
+                    },
+                    "name": {
+                      "description": "宛名",
+                      "type": "string"
+                    },
+                    "furigana": {
+                      "description": "宛名のフリガナ",
+                      "type": "string"
+                    },
+                    "postal": {
+                      "description": "郵便番号",
+                      "type": "string"
+                    },
+                    "pref_id": {
+                      "description": "都道府県の通し番号。北海道が1、沖縄が47",
+                      "type": "integer",
+                      "minimum": -9007199254740991,
+                      "maximum": 9007199254740991
+                    },
+                    "pref_name": {
+                      "description": "都道府県名",
+                      "type": "string"
+                    },
+                    "address1": {
+                      "description": "住所1",
+                      "type": "string"
+                    },
+                    "address2": {
+                      "description": "住所2",
+                      "type": "string"
+                    },
+                    "tel": {
+                      "description": "電話番号",
+                      "type": "string"
+                    },
+                    "preferred_date": {
+                      "description": "配送希望日",
+                      "type": "string"
+                    },
+                    "preferred_period": {
+                      "description": "配送希望時間帯",
+                      "type": "string"
+                    },
+                    "slip_number": {
+                      "description": "配送伝票番号",
+                      "type": "string"
+                    },
+                    "noshi_text": {
+                      "description": "熨斗の文言",
+                      "type": "string"
+                    },
+                    "noshi_charge": {
+                      "description": "熨斗の料金",
+                      "type": "integer",
+                      "minimum": -9007199254740991,
+                      "maximum": 9007199254740991
+                    },
+                    "card_name": {
+                      "description": "メッセージカードの表示名",
+                      "type": "string"
+                    },
+                    "card_text": {
+                      "description": "メッセージカードのテキスト",
+                      "type": "string"
+                    },
+                    "card_charge": {
+                      "description": "メッセージカードの料金",
+                      "type": "integer",
+                      "minimum": -9007199254740991,
+                      "maximum": 9007199254740991
+                    },
+                    "wrapping_name": {
+                      "description": "ラッピングの表示名",
+                      "type": "string"
+                    },
+                    "wrapping_charge": {
+                      "description": "ラッピングの料金",
+                      "type": "integer",
+                      "minimum": -9007199254740991,
+                      "maximum": 9007199254740991
+                    },
+                    "delivery_charge": {
+                      "description": "配送料",
+                      "type": "integer",
+                      "minimum": -9007199254740991,
+                      "maximum": 9007199254740991
+                    },
+                    "total_charge": {
+                      "description": "配送料・手数料の小計",
+                      "type": "integer",
+                      "minimum": -9007199254740991,
+                      "maximum": 9007199254740991
+                    },
+                    "tracking_url": {
+                      "description": "配送状況確認URL",
+                      "type": "string"
+                    },
+                    "memo": {
+                      "description": "備考",
+                      "type": "string"
+                    },
+                    "delivered": {
+                      "description": "発送済みであるか否か",
+                      "type": "boolean"
+                    }
+                  },
+                  "additionalProperties": false
+                }
+              }
+            },
+            "additionalProperties": false
+          }
+        },
+        "required": [
+          "sale_id"
+        ],
+        "additionalProperties": false
+      },
+      "annotations": {
+        "readOnlyHint": false,
+        "destructiveHint": true,
+        "idempotentHint": true,
+        "openWorldHint": true
+      }
+    },
+    {
+      "name": "cancelSale",
+      "description": "受注のキャンセル  受注をキャンセルすると、以下のことが起こります。  - 該当受注の商品購入数が0になる - 該当受注の合計金額が0になる - 該当受注の`canceled`が`true`になる - 該当受注に使用されたショップポイント・GMOポイントがキャンセルされる - 該当受注の決済がAmazon Pay、LINE Pay、または楽天ペイ（オンライン決済）である場合は、決済金額が自動的に購入者へ返金される - 該当受注の決済がPayPay（イプシロン）である場合には、イプシロン側の決済もキャンセルされる - ショップポイントがキャンセルされる  販売手数料確定前の場合は以下のことが起こります。 - 販売手数料が0になる - 付与したGMOポイントがキャンセルされる - 購入者が使用したGMOポイントがキャンセルされる  現在、以下の機能はサポートしていません。 - キャンセル連動設定を利用した、クレジット（イプシロン）決済のキャンセル - 分割された受注のキャンセル",
+      "inputSchema": {
+        "$schema": "http://json-schema.org/draft-07/schema#",
+        "type": "object",
+        "properties": {
+          "sale_id": {
+            "type": "integer",
+            "minimum": -9007199254740991,
+            "maximum": 9007199254740991
+          },
+          "restock": {
+            "description": "`true`の場合、在庫管理している商品について、購入された分の在庫数を充当する",
+            "type": "boolean"
+          }
+        },
+        "required": [
+          "sale_id"
+        ],
+        "additionalProperties": false
+      },
+      "annotations": {
+        "readOnlyHint": false,
+        "destructiveHint": true,
+        "idempotentHint": true,
+        "openWorldHint": true
+      }
+    },
+    {
+      "name": "sendSalesMail",
+      "description": "メールの送信  受注・入金確認・商品発送メールを送ることができます。  対象の受注が分割されている場合、 受注メール、入金確認メールは、親受注でのみ指定可能です。",
+      "inputSchema": {
+        "$schema": "http://json-schema.org/draft-07/schema#",
+        "type": "object",
+        "properties": {
+          "sale_id": {
+            "type": "integer",
+            "minimum": -9007199254740991,
+            "maximum": 9007199254740991
+          },
+          "mail": {
+            "type": "object",
+            "properties": {
+              "type": {
+                "description": "送信するメールの種類  - `accepted`: 受注メールを送信する - `paid`: 入金確認メールを送信する - `delivered`: 商品発送メールを送信する ",
+                "type": "string",
+                "enum": [
+                  "accepted",
+                  "paid",
+                  "delivered"
+                ]
+              }
+            },
+            "additionalProperties": false
+          }
+        },
+        "required": [
+          "sale_id"
+        ],
+        "additionalProperties": false
+      },
+      "annotations": {
+        "readOnlyHint": false,
+        "destructiveHint": true,
+        "idempotentHint": false,
+        "openWorldHint": true
+      }
+    },
+    {
+      "name": "createPaymentUrls",
+      "description": "決済URL発行  未入金の受注に対して決済用のURLを発行します。  #### 有効期限 発行されたURLの有効期限は発行時刻から72時間（3日間）です。  #### 制限事項 - 入金済みの受注には発行できません - キャンセル済みの受注には発行できません - 対応していない決済方法の受注には発行できません",
+      "inputSchema": {
+        "$schema": "http://json-schema.org/draft-07/schema#",
+        "type": "object",
+        "properties": {
+          "sale_id": {
+            "type": "integer",
+            "minimum": -9007199254740991,
+            "maximum": 9007199254740991
+          }
+        },
+        "required": [
+          "sale_id"
+        ],
+        "additionalProperties": false
+      },
+      "annotations": {
+        "readOnlyHint": false,
+        "destructiveHint": true,
+        "idempotentHint": false,
+        "openWorldHint": true
+      }
+    },
+    {
+      "name": "getCustomers",
+      "description": "顧客データのリストを取得  顧客データの一覧を取得します。検索条件を指定して絞り込むことができます。",
+      "inputSchema": {
+        "$schema": "http://json-schema.org/draft-07/schema#",
+        "type": "object",
+        "properties": {
+          "ids": {
+            "description": "顧客IDで検索。カンマ区切りで複数指定可能",
+            "type": "string"
+          },
+          "name": {
+            "description": "顧客名で部分一致検索",
+            "type": "string"
+          },
+          "furigana": {
+            "description": "顧客フリガナで部分一致検索",
+            "type": "string"
+          },
+          "mail": {
+            "description": "顧客メールアドレスで部分一致検索",
+            "type": "string"
+          },
+          "postal": {
+            "description": "顧客の郵便番号で部分一致検索",
+            "type": "string"
+          },
+          "tel": {
+            "description": "顧客の電話番号で部分一致検索",
+            "type": "string"
+          },
+          "line_uid": {
+            "description": "LINE UIDで完全一致検索",
+            "type": "string"
+          },
+          "sex": {
+            "description": "顧客の性別で検索  - `male`: 男性 - `female`: 女性 - `not_applicable`: 未回答 ",
+            "type": "string",
+            "enum": [
+              "male",
+              "female",
+              "not_applicable"
+            ]
+          },
+          "member": {
+            "description": "`true`なら会員登録済みの顧客から検索",
+            "type": "boolean"
+          },
+          "receive_mail_magazine": {
+            "description": "メルマガ受信可否で検索",
+            "type": "boolean"
+          },
+          "make_date_min": {
+            "description": "指定日時以降に登録された顧客から検索",
+            "type": "string"
+          },
+          "make_date_max": {
+            "description": "指定日時以前に登録された顧客から検索",
+            "type": "string"
+          },
+          "update_date_min": {
+            "description": "指定日時以降に更新された顧客から検索",
+            "type": "string"
+          },
+          "update_date_max": {
+            "description": "指定日時以前に更新された顧客から検索",
+            "type": "string"
+          },
+          "limit": {
+            "description": "レスポンスの件数を指定。指定がない場合は10。最大100",
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 100
+          },
+          "offset": {
+            "description": "指定した数値+1件目以降のデータを返す",
+            "type": "integer",
+            "minimum": 0,
+            "maximum": 9007199254740991
+          }
+        },
+        "additionalProperties": false
+      },
+      "annotations": {
+        "readOnlyHint": true,
+        "destructiveHint": false,
+        "idempotentHint": true,
+        "openWorldHint": true
+      }
+    },
+    {
+      "name": "postCustomers",
+      "description": "顧客データを追加  新しい顧客を作成します。会員として登録することも可能です。",
+      "inputSchema": {
+        "$schema": "http://json-schema.org/draft-07/schema#",
+        "type": "object",
+        "properties": {
+          "customer": {
+            "type": "object",
+            "properties": {
+              "name": {
+                "type": "string",
+                "maxLength": 50,
+                "description": "顧客名"
+              },
+              "mail": {
+                "type": "string",
+                "format": "email",
+                "pattern": "^(?!\\.)(?!.*\\.\\.)([A-Za-z0-9_'+\\-\\.]*)[A-Za-z0-9_+-]@([A-Za-z0-9][A-Za-z0-9\\-]*\\.)+[A-Za-z]{2,}$",
+                "description": "メールアドレス"
+              },
+              "pref_id": {
+                "type": "integer",
+                "minimum": 1,
+                "maximum": 48,
+                "description": "都道府県ID"
+              },
+              "postal": {
+                "type": "string",
+                "description": "郵便番号"
+              },
+              "address1": {
+                "type": "string",
+                "description": "住所1（市区町村・番地）"
+              },
+              "address2": {
+                "description": "住所2（建物名など）",
+                "type": "string"
+              },
+              "tel": {
+                "type": "string",
+                "pattern": "^[\\d-]+$",
+                "description": "電話番号"
+              },
+              "furigana": {
+                "description": "フリガナ",
+                "type": "string",
+                "maxLength": 50,
+                "pattern": "^[ァ-ヶー \\u3000ヷヸヹヺ]*$"
+              },
+              "fax": {
+                "description": "FAX番号",
+                "type": "string",
+                "pattern": "^[\\d-]+$"
+              },
+              "birthday": {
+                "description": "生年月日（YYYY-MM-DD形式）",
+                "type": "string"
+              },
+              "hojin": {
+                "description": "法人名",
+                "type": "string",
+                "maxLength": 100
+              },
+              "busho": {
+                "description": "部署名",
+                "type": "string",
+                "maxLength": 50
+              },
+              "receive_mail_magazine": {
+                "description": "メルマガ受信可否",
+                "type": "boolean"
+              },
+              "answer_free_form1": {
+                "description": "フリー項目1",
+                "type": "string",
+                "maxLength": 255
+              },
+              "answer_free_form2": {
+                "description": "フリー項目2",
+                "type": "string",
+                "maxLength": 255
+              },
+              "answer_free_form3": {
+                "description": "フリー項目3",
+                "type": "string",
+                "maxLength": 255
+              },
+              "other": {
+                "description": "備考",
+                "type": "string"
+              },
+              "add_member": {
+                "description": "会員登録するかどうか",
+                "type": "boolean"
+              }
+            },
+            "required": [
+              "name",
+              "mail",
+              "pref_id",
+              "postal",
+              "address1",
+              "tel"
+            ],
+            "additionalProperties": false
+          }
+        },
+        "required": [
+          "customer"
+        ],
+        "additionalProperties": false
+      },
+      "annotations": {
+        "readOnlyHint": false,
+        "destructiveHint": true,
+        "idempotentHint": false,
+        "openWorldHint": true
+      }
+    },
+    {
+      "name": "getCustomer",
+      "description": "顧客データの取得  顧客データを取得します。",
+      "inputSchema": {
+        "$schema": "http://json-schema.org/draft-07/schema#",
+        "type": "object",
+        "properties": {
+          "customer_id": {
+            "type": "integer",
+            "minimum": -9007199254740991,
+            "maximum": 9007199254740991
+          }
+        },
+        "required": [
+          "customer_id"
+        ],
+        "additionalProperties": false
+      },
+      "annotations": {
+        "readOnlyHint": true,
+        "destructiveHint": false,
+        "idempotentHint": true,
+        "openWorldHint": true
+      }
+    },
+    {
+      "name": "updateCustomers",
+      "description": "顧客データの更新  既存の顧客データを更新します。指定した項目のみが更新されます。",
+      "inputSchema": {
+        "$schema": "http://json-schema.org/draft-07/schema#",
+        "type": "object",
+        "properties": {
+          "customer_id": {
+            "type": "integer",
+            "minimum": -9007199254740991,
+            "maximum": 9007199254740991,
+            "description": "更新対象の顧客ID"
+          },
+          "customer": {
+            "type": "object",
+            "properties": {
+              "name": {
+                "description": "顧客名",
+                "type": "string",
+                "maxLength": 50
+              },
+              "furigana": {
+                "description": "フリガナ",
+                "type": "string",
+                "maxLength": 50,
+                "pattern": "^[ァ-ヶー \\u3000ヷヸヹヺ]*$"
+              },
+              "mail": {
+                "description": "メールアドレス",
+                "type": "string",
+                "format": "email",
+                "pattern": "^(?!\\.)(?!.*\\.\\.)([A-Za-z0-9_'+\\-\\.]*)[A-Za-z0-9_+-]@([A-Za-z0-9][A-Za-z0-9\\-]*\\.)+[A-Za-z]{2,}$"
+              },
+              "pref_id": {
+                "description": "都道府県ID",
+                "type": "integer",
+                "minimum": 1,
+                "maximum": 48
+              },
+              "postal": {
+                "description": "郵便番号",
+                "type": "string"
+              },
+              "address1": {
+                "description": "住所1（市区町村・番地）",
+                "type": "string"
+              },
+              "address2": {
+                "description": "住所2（建物名など）",
+                "type": "string"
+              },
+              "tel": {
+                "description": "電話番号",
+                "type": "string",
+                "pattern": "^[\\d-]+$"
+              },
+              "tel_mobile": {
+                "description": "携帯電話番号",
+                "type": "string",
+                "pattern": "^[\\d-]+$"
+              },
+              "fax": {
+                "description": "FAX番号",
+                "type": "string",
+                "pattern": "^[\\d-]+$"
+              },
+              "sex": {
+                "description": "性別",
+                "type": "string",
+                "enum": [
+                  "male",
+                  "female",
+                  "not_applicable"
+                ]
+              },
+              "birthday": {
+                "description": "生年月日（YYYY-MM-DD形式）",
+                "type": "string"
+              },
+              "hojin": {
+                "description": "法人名",
+                "type": "string",
+                "maxLength": 100
+              },
+              "busho": {
+                "description": "部署名",
+                "type": "string",
+                "maxLength": 50
+              },
+              "receive_mail_magazine": {
+                "description": "メルマガ受信可否",
+                "type": "boolean"
+              },
+              "answer_free_form1": {
+                "description": "フリー項目1",
+                "type": "string",
+                "maxLength": 255
+              },
+              "answer_free_form2": {
+                "description": "フリー項目2",
+                "type": "string",
+                "maxLength": 255
+              },
+              "answer_free_form3": {
+                "description": "フリー項目3",
+                "type": "string",
+                "maxLength": 255
+              },
+              "other": {
+                "description": "備考",
+                "type": "string"
+              }
+            },
+            "additionalProperties": false
+          }
+        },
+        "required": [
+          "customer_id",
+          "customer"
+        ],
+        "additionalProperties": false
+      },
+      "annotations": {
+        "readOnlyHint": false,
+        "destructiveHint": true,
+        "idempotentHint": true,
+        "openWorldHint": true
+      }
+    },
+    {
+      "name": "postCustomerPoints",
+      "description": "顧客ショップポイントの増減  `customer_id`で指定した顧客の持つショップポイントに対し`points`リクエストパラメータの数値を加算・減算します。  減算させる場合は`points`リクエストパラメータにマイナス値をセットします。",
+      "inputSchema": {
+        "$schema": "http://json-schema.org/draft-07/schema#",
+        "type": "object",
+        "properties": {
+          "customer_id": {
+            "type": "integer",
+            "minimum": -9007199254740991,
+            "maximum": 9007199254740991
+          },
+          "points": {
+            "type": "integer",
+            "minimum": -9007199254740991,
+            "maximum": 9007199254740991,
+            "description": "増減させるポイント数"
+          }
+        },
+        "required": [
+          "customer_id",
+          "points"
+        ],
+        "additionalProperties": false
+      },
+      "annotations": {
+        "readOnlyHint": false,
+        "destructiveHint": true,
+        "idempotentHint": false,
+        "openWorldHint": true
+      }
+    },
+    {
+      "name": "updateCustomerMembership",
+      "description": "顧客の会員ランクの更新  `customer_id`で指定した顧客の所属する会員ランクを更新します。 更新したい会員ランクを`membership.membership_id`で指定してください。  注意事項: - カラーミーショップ アプリストアで提供している「会員ランク」を利用している場合にのみリクエストできます。",
+      "inputSchema": {
+        "$schema": "http://json-schema.org/draft-07/schema#",
+        "type": "object",
+        "properties": {
+          "customer_id": {
+            "type": "integer",
+            "minimum": -9007199254740991,
+            "maximum": 9007199254740991,
+            "description": "更新対象の顧客ID"
+          },
+          "membership": {
+            "type": "object",
+            "properties": {
+              "membership_id": {
+                "type": "string",
+                "description": "会員ランクID"
+              }
+            },
+            "required": [
+              "membership_id"
+            ],
+            "additionalProperties": false,
+            "description": "会員ランク情報"
+          }
+        },
+        "required": [
+          "customer_id",
+          "membership"
+        ],
+        "additionalProperties": false
+      },
+      "annotations": {
+        "readOnlyHint": false,
+        "destructiveHint": true,
+        "idempotentHint": true,
+        "openWorldHint": true
+      }
+    },
+    {
+      "name": "deleteCustomerGroupMembership",
+      "description": "顧客の会員ランクの解除  `customer_id`で指定した顧客と所属している会員ランクの紐付きを解除します。  注意事項: - カラーミーショップ アプリストアで提供している「会員ランク」を利用している場合にのみリクエストできます。",
+      "inputSchema": {
+        "$schema": "http://json-schema.org/draft-07/schema#",
+        "type": "object",
+        "properties": {
+          "customer_id": {
+            "type": "integer",
+            "minimum": -9007199254740991,
+            "maximum": 9007199254740991,
+            "description": "解除対象の顧客ID"
+          }
+        },
+        "required": [
+          "customer_id"
+        ],
+        "additionalProperties": false
+      },
+      "annotations": {
+        "readOnlyHint": false,
+        "destructiveHint": true,
+        "idempotentHint": true,
+        "openWorldHint": true
+      }
+    },
+    {
+      "name": "getProducts",
+      "description": "商品一覧の取得  商品一覧を取得します。  オプションやバリエーションの数が多い場合、レスポンスの返却に時間がかかる場合があります。 `fields` リクエストパラメータで必要なキーを指定することを推奨します。",
+      "inputSchema": {
+        "$schema": "http://json-schema.org/draft-07/schema#",
+        "type": "object",
+        "properties": {
+          "ids": {
+            "description": "商品IDで検索。カンマ区切りにすることで複数検索が可能",
+            "type": "string"
+          },
+          "category_id_big": {
+            "description": "大カテゴリーIDで検索",
+            "type": "integer",
+            "minimum": -9007199254740991,
+            "maximum": 9007199254740991
+          },
+          "category_id_small": {
+            "description": "小カテゴリーIDで検索",
+            "type": "integer",
+            "minimum": -9007199254740991,
+            "maximum": 9007199254740991
+          },
+          "group_ids": {
+            "description": "グループIDで検索。カンマ区切りにすることで複数検索が可能",
+            "type": "integer",
+            "minimum": -9007199254740991,
+            "maximum": 9007199254740991
+          },
+          "model_number": {
+            "description": "型番で部分一致検索",
+            "type": "string"
+          },
+          "name": {
+            "description": "商品名で部分一致検索",
+            "type": "string"
+          },
+          "display_state": {
+            "description": "掲載設定で検索  - `showing`: 掲載状態 - `hidden`: 非掲載状態 - `showing_for_members`: 会員にのみ掲載 - `sale_for_members`: 掲載状態だが購入は会員のみ可能 ",
+            "type": "string",
+            "enum": [
+              "showing",
+              "hidden",
+              "showing_for_members",
+              "sale_for_members"
+            ]
+          },
+          "stocks": {
+            "description": "在庫管理している商品のうち、在庫数が指定した数値以下の商品を検索。オプションごとに在庫管理している商品は、オプションごとの在庫数で検索される",
+            "type": "integer",
+            "minimum": -9007199254740991,
+            "maximum": 9007199254740991
+          },
+          "stock_managed": {
+            "description": "`true`の場合、在庫管理している商品を検索",
+            "type": "boolean"
+          },
+          "recent_zero_stocks": {
+            "description": "`true` の場合、在庫管理している商品のうち、過去1週間以内に更新され在庫数が0の商品を検索",
+            "type": "boolean"
+          },
+          "make_date_min": {
+            "description": "指定日時以降に作成された商品から検索",
+            "type": "string"
+          },
+          "make_date_max": {
+            "description": "指定日時以前に作成された商品から検索",
+            "type": "string"
+          },
+          "update_date_min": {
+            "description": "指定日時以降に更新された商品から検索",
+            "type": "string"
+          },
+          "update_date_max": {
+            "description": "指定日時以前に更新された商品から検索",
+            "type": "string"
+          },
+          "sales_price_min": {
+            "description": "販売価格が指定した金額以上の商品を検索。0以上の整数のみ有効",
+            "type": "integer",
+            "minimum": -9007199254740991,
+            "maximum": 9007199254740991
+          },
+          "sales_price_max": {
+            "description": "販売価格が指定した金額以下の商品を検索。0以上の整数のみ有効",
+            "type": "integer",
+            "minimum": -9007199254740991,
+            "maximum": 9007199254740991
+          },
+          "price_min": {
+            "description": "定価が指定した金額以上の商品を検索。0以上の整数のみ有効",
+            "type": "integer",
+            "minimum": -9007199254740991,
+            "maximum": 9007199254740991
+          },
+          "price_max": {
+            "description": "定価が指定した金額以下の商品を検索。0以上の整数のみ有効",
+            "type": "integer",
+            "minimum": -9007199254740991,
+            "maximum": 9007199254740991
+          },
+          "members_price_min": {
+            "description": "会員価格が指定した金額以上の商品を検索。0以上の整数のみ有効",
+            "type": "integer",
+            "minimum": -9007199254740991,
+            "maximum": 9007199254740991
+          },
+          "members_price_max": {
+            "description": "会員価格が指定した金額以下の商品を検索。0以上の整数のみ有効",
+            "type": "integer",
+            "minimum": -9007199254740991,
+            "maximum": 9007199254740991
+          },
+          "jan_code": {
+            "description": "JANコードで完全一致検索",
+            "type": "string"
+          },
+          "sort": {
+            "description": "商品の並び順を指定します。カラム名の前に `-` を付けると降順、なしで昇順です。カンマ区切りで複数指定できます。デフォルトは作成日の降順(`-make_date`)です。 指定可能なカラム: `make_date` (作成日), `update_date` (更新日), `sales_price` (販売価格), `price` (定価), `members_price` (会員価格)  例: - `sort=sales_price` — 販売価格の昇順 - `sort=-update_date` — 更新日の降順 - `sort=-sales_price,make_date` — 販売価格の降順 → 作成日の昇順 ",
+            "type": "string"
+          },
+          "fields": {
+            "description": "レスポンスJSONのキーをカンマ区切りで指定",
+            "type": "string"
+          },
+          "limit": {
+            "description": "レスポンスの件数を指定。指定がない場合は10。最大50",
+            "type": "integer",
+            "minimum": -9007199254740991,
+            "maximum": 9007199254740991
+          },
+          "offset": {
+            "description": "指定した数値+1件目以降のデータを返す",
+            "type": "integer",
+            "minimum": -9007199254740991,
+            "maximum": 9007199254740991
+          }
+        },
+        "additionalProperties": false
+      },
+      "annotations": {
+        "readOnlyHint": true,
+        "destructiveHint": false,
+        "idempotentHint": true,
+        "openWorldHint": true
+      }
+    },
+    {
+      "name": "postProducts",
+      "description": "商品データの追加",
+      "inputSchema": {
+        "$schema": "http://json-schema.org/draft-07/schema#",
+        "type": "object",
+        "properties": {
+          "product": {
+            "type": "object",
+            "properties": {
+              "name": {
+                "description": "商品名",
+                "type": "string",
+                "maxLength": 100
+              },
+              "price": {
+                "description": "定価",
+                "type": "integer",
+                "minimum": -9007199254740991,
+                "maximum": 9007199254740991
+              },
+              "category_id_big": {
+                "description": "大カテゴリーID",
+                "type": "integer",
+                "minimum": -9007199254740991,
+                "maximum": 9007199254740991
+              },
+              "cost": {
+                "description": "原価",
+                "type": "integer",
+                "minimum": 0,
+                "maximum": 9007199254740991
+              },
+              "sales_price": {
+                "description": "販売価格 フリープランを利用しているショップの場合、最低価格は100円です。 ",
+                "type": "integer",
+                "minimum": 0,
+                "maximum": 9007199254740991
+              },
+              "members_price": {
+                "description": "会員価格 フリープランを利用しているショップの場合、最低価格は100円です。 ",
+                "type": "integer",
+                "minimum": 0,
+                "maximum": 9007199254740991
+              },
+              "model_number": {
+                "description": "型番",
+                "type": "string",
+                "maxLength": 50
+              },
+              "expl": {
+                "description": "商品説明",
+                "type": "string"
+              },
+              "simple_expl": {
+                "description": "簡易説明",
+                "type": "string",
+                "maxLength": 255
+              },
+              "smartphone_expl": {
+                "description": "スマホ向けショップの商品説明",
+                "type": "string"
+              },
+              "display_state": {
+                "description": "掲載設定  - `showing`: 掲載状態 - `hidden`: 非掲載状態 - `showing_for_members`: 会員にのみ掲載 - `sale_for_members`: 掲載状態だが購入は会員のみ可能 ",
+                "type": "string",
+                "enum": [
+                  "showing",
+                  "hidden",
+                  "showing_for_members",
+                  "sale_for_members"
+                ]
+              },
+              "stock_managed": {
+                "description": "在庫管理する場合は `true`",
+                "type": "boolean"
+              },
+              "tax_reduced": {
+                "description": "`true` の場合は軽減税率対象",
+                "type": "boolean"
+              }
+            },
+            "additionalProperties": false
+          }
+        },
+        "additionalProperties": false
+      },
+      "annotations": {
+        "readOnlyHint": false,
+        "destructiveHint": true,
+        "idempotentHint": false,
+        "openWorldHint": true
+      }
+    },
+    {
+      "name": "getProduct",
+      "description": "商品データの取得",
+      "inputSchema": {
+        "$schema": "http://json-schema.org/draft-07/schema#",
+        "type": "object",
+        "properties": {
+          "product_id": {
+            "type": "integer",
+            "minimum": -9007199254740991,
+            "maximum": 9007199254740991,
+            "description": "商品ID"
+          }
+        },
+        "required": [
+          "product_id"
+        ],
+        "additionalProperties": false
+      },
+      "annotations": {
+        "readOnlyHint": true,
+        "destructiveHint": false,
+        "idempotentHint": true,
+        "openWorldHint": true
+      }
+    },
+    {
+      "name": "updateProduct",
+      "description": "商品データの更新",
+      "inputSchema": {
+        "$schema": "http://json-schema.org/draft-07/schema#",
+        "type": "object",
+        "properties": {
+          "product_id": {
+            "type": "integer",
+            "minimum": -9007199254740991,
+            "maximum": 9007199254740991,
+            "description": "商品ID"
+          },
+          "product": {
+            "type": "object",
+            "properties": {
+              "name": {
+                "description": "商品名",
+                "type": "string",
+                "maxLength": 100
+              },
+              "price": {
+                "description": "定価",
+                "type": "integer",
+                "minimum": -9007199254740991,
+                "maximum": 9007199254740991
+              },
+              "category_id_big": {
+                "description": "大カテゴリーID",
+                "type": "integer",
+                "minimum": -9007199254740991,
+                "maximum": 9007199254740991
+              },
+              "category_id_small": {
+                "description": "小カテゴリーID",
+                "type": "integer",
+                "minimum": -9007199254740991,
+                "maximum": 9007199254740991
+              },
+              "cost": {
+                "description": "原価",
+                "type": "integer",
+                "minimum": 0,
+                "maximum": 9007199254740991
+              },
+              "sales_price": {
+                "description": "販売価格 フリープランを利用しているショップの場合、最低価格は100円です。 ",
+                "type": "integer",
+                "minimum": 0,
+                "maximum": 9007199254740991
+              },
+              "members_price": {
+                "description": "会員価格 フリープランを利用しているショップの場合、最低価格は100円です。 ",
+                "type": "integer",
+                "minimum": 0,
+                "maximum": 9007199254740991
+              },
+              "model_number": {
+                "description": "型番",
+                "type": "string",
+                "maxLength": 50
+              },
+              "expl": {
+                "description": "商品説明",
+                "type": "string"
+              },
+              "simple_expl": {
+                "description": "簡易説明",
+                "type": "string",
+                "maxLength": 255
+              },
+              "smartphone_expl": {
+                "description": "スマホ向けショップの商品説明",
+                "type": "string"
+              },
+              "display_state": {
+                "description": "掲載設定  - `showing`: 掲載状態 - `hidden`: 非掲載状態 - `showing_for_members`: 会員にのみ掲載 - `sale_for_members`: 掲載状態だが購入は会員のみ可能 ",
+                "type": "string",
+                "enum": [
+                  "showing",
+                  "hidden",
+                  "showing_for_members",
+                  "sale_for_members"
+                ]
+              },
+              "stock_managed": {
+                "description": "在庫管理する場合は `true`",
+                "type": "boolean"
+              },
+              "stocks": {
+                "description": "（推奨） `increment`を利用すると、その数値だけ在庫数を増減させることが可能です。負の値も指定可能です。（-1, 1 等） ```json \"stocks\": {   \"increment\": 3 } ```  `increment`を利用せずに数値を指定した場合は、在庫数をその数値で更新します。商品オプションごとに在庫管理している場合、このパラメータは無視されます。 ",
+                "anyOf": [
+                  {
+                    "type": "object",
+                    "properties": {
+                      "increment": {
+                        "description": "在庫数の増減値",
+                        "type": "integer",
+                        "minimum": -9007199254740991,
+                        "maximum": 9007199254740991
+                      }
+                    },
+                    "additionalProperties": false
+                  },
+                  {
+                    "type": "integer",
+                    "minimum": 0,
+                    "maximum": 9007199254740991
+                  }
+                ]
+              },
+              "group_ids": {
+                "description": "グループIDの配列",
+                "type": "array",
+                "items": {
+                  "type": "integer",
+                  "minimum": 0,
+                  "maximum": 9007199254740991
+                }
+              },
+              "variants": {
+                "description": "商品オプションによるバリエーションごとに更新",
+                "type": "array",
+                "items": {
+                  "type": "object",
+                  "properties": {
+                    "option1_value": {
+                      "description": "オプション1の値",
+                      "type": "string"
+                    },
+                    "option2_value": {
+                      "description": "オプション2の値",
+                      "type": "string"
+                    },
+                    "stocks": {
+                      "description": "上記`stocks`と同様に、数値、または増減値を用いて在庫数を更新できます。",
+                      "anyOf": [
+                        {
+                          "type": "object",
+                          "properties": {
+                            "increment": {
+                              "description": "在庫数の増減値",
+                              "type": "integer",
+                              "minimum": -9007199254740991,
+                              "maximum": 9007199254740991
+                            }
+                          },
+                          "additionalProperties": false
+                        },
+                        {
+                          "type": "integer",
+                          "minimum": 0,
+                          "maximum": 9007199254740991
+                        }
+                      ]
+                    }
+                  },
+                  "additionalProperties": false
+                }
+              },
+              "tax_reduced": {
+                "description": "`true` の場合は軽減税率対象",
+                "type": "boolean"
+              }
+            },
+            "additionalProperties": false
+          }
+        },
+        "required": [
+          "product_id"
+        ],
+        "additionalProperties": false
+      },
+      "annotations": {
+        "readOnlyHint": false,
+        "destructiveHint": true,
+        "idempotentHint": true,
+        "openWorldHint": true
+      }
+    },
+    {
+      "name": "getProductVariants",
+      "description": "商品オプション一覧の取得",
+      "inputSchema": {
+        "$schema": "http://json-schema.org/draft-07/schema#",
+        "type": "object",
+        "properties": {
+          "product_id": {
+            "type": "integer",
+            "minimum": -9007199254740991,
+            "maximum": 9007199254740991,
+            "description": "商品ID"
+          },
+          "model_number": {
+            "description": "型番で部分一致検索",
+            "type": "string"
+          },
+          "fields": {
+            "description": "レスポンスJSONのキーをカンマ区切りで指定",
+            "type": "string"
+          },
+          "limit": {
+            "description": "レスポンスの件数を指定。指定がない場合は10。最大50",
+            "type": "integer",
+            "minimum": -9007199254740991,
+            "maximum": 9007199254740991
+          },
+          "offset": {
+            "description": "指定した数値+1件目以降のデータを返す",
+            "type": "integer",
+            "minimum": -9007199254740991,
+            "maximum": 9007199254740991
+          }
+        },
+        "required": [
+          "product_id"
+        ],
+        "additionalProperties": false
+      },
+      "annotations": {
+        "readOnlyHint": true,
+        "destructiveHint": false,
+        "idempotentHint": true,
+        "openWorldHint": true
+      }
+    },
+    {
+      "name": "postProductPickup",
+      "description": "おすすめ商品情報の追加  おすすめ商品情報(おすすめ商品、売れ筋商品、新着商品、イチオシ商品のいずれか)を商品に追加します。",
+      "inputSchema": {
+        "$schema": "http://json-schema.org/draft-07/schema#",
+        "type": "object",
+        "properties": {
+          "product_id": {
+            "type": "integer",
+            "minimum": -9007199254740991,
+            "maximum": 9007199254740991,
+            "description": "商品ID"
+          },
+          "pickup_type": {
+            "description": "おすすめ商品情報種別（0:おすすめ商品, 1:売れ筋商品, 3:新着商品, 4:イチオシ商品）",
+            "type": "integer",
+            "minimum": -9007199254740991,
+            "maximum": 9007199254740991
+          },
+          "order_num": {
+            "description": "商品の表示順",
+            "type": "integer",
+            "minimum": 0,
+            "maximum": 9007199254740991
+          }
+        },
+        "required": [
+          "product_id"
+        ],
+        "additionalProperties": false
+      },
+      "annotations": {
+        "readOnlyHint": false,
+        "destructiveHint": true,
+        "idempotentHint": false,
+        "openWorldHint": true
+      }
+    },
+    {
+      "name": "putProductPickup",
+      "description": "おすすめ商品情報の更新  おすすめ商品情報(おすすめ商品、売れ筋商品、新着商品、イチオシ商品のいずれか)を更新します。",
+      "inputSchema": {
+        "$schema": "http://json-schema.org/draft-07/schema#",
+        "type": "object",
+        "properties": {
+          "product_id": {
+            "type": "integer",
+            "minimum": -9007199254740991,
+            "maximum": 9007199254740991,
+            "description": "商品ID"
+          },
+          "pickup_type": {
+            "description": "おすすめ商品情報種別（0:おすすめ商品, 1:売れ筋商品, 3:新着商品, 4:イチオシ商品）",
+            "type": "integer",
+            "minimum": -9007199254740991,
+            "maximum": 9007199254740991
+          },
+          "order_num": {
+            "description": "商品の表示順",
+            "type": "integer",
+            "minimum": 0,
+            "maximum": 9007199254740991
+          }
+        },
+        "required": [
+          "product_id"
+        ],
+        "additionalProperties": false
+      },
+      "annotations": {
+        "readOnlyHint": false,
+        "destructiveHint": true,
+        "idempotentHint": true,
+        "openWorldHint": true
+      }
+    },
+    {
+      "name": "deleteProductPickup",
+      "description": "おすすめ商品情報の削除  商品に付加されたおすすめ商品情報を削除します",
+      "inputSchema": {
+        "$schema": "http://json-schema.org/draft-07/schema#",
+        "type": "object",
+        "properties": {
+          "product_id": {
+            "type": "integer",
+            "minimum": -9007199254740991,
+            "maximum": 9007199254740991,
+            "description": "商品ID"
+          },
+          "pickup_type": {
+            "type": "integer",
+            "minimum": -9007199254740991,
+            "maximum": 9007199254740991,
+            "description": "おすすめ商品情報種別（0:おすすめ商品, 1:売れ筋商品, 3:新着商品, 4:イチオシ商品）"
+          }
+        },
+        "required": [
+          "product_id",
+          "pickup_type"
+        ],
+        "additionalProperties": false
+      },
+      "annotations": {
+        "readOnlyHint": false,
+        "destructiveHint": true,
+        "idempotentHint": true,
+        "openWorldHint": true
+      }
+    },
+    {
+      "name": "getProductImages",
+      "description": "商品画像の取得  指定した商品の全画像情報を取得します（position 0-49）",
+      "inputSchema": {
+        "$schema": "http://json-schema.org/draft-07/schema#",
+        "type": "object",
+        "properties": {
+          "product_id": {
+            "type": "integer",
+            "minimum": -9007199254740991,
+            "maximum": 9007199254740991,
+            "description": "商品ID"
+          }
+        },
+        "required": [
+          "product_id"
+        ],
+        "additionalProperties": false
+      },
+      "annotations": {
+        "readOnlyHint": true,
+        "destructiveHint": false,
+        "idempotentHint": true,
+        "openWorldHint": true
+      }
+    },
+    {
+      "name": "getProductAdvertisings",
+      "description": "広告・ショッピング連携設定一覧の取得  商品毎に設定した広告・ショッピング連携設定の内容を取得することができます",
+      "inputSchema": {
+        "$schema": "http://json-schema.org/draft-07/schema#",
+        "type": "object",
+        "properties": {
+          "product_ids": {
+            "description": "商品IDで検索。カンマ区切りにすることで複数検索が可能",
+            "type": "string"
+          },
+          "display_state": {
+            "description": "商品の掲載設定で検索  - `showing`: 掲載状態 - `hidden`: 非掲載状態 - `showing_for_members`: 会員にのみ掲載 - `sale_for_members`: 掲載状態だが購入は会員のみ可能 ",
+            "type": "string",
+            "enum": [
+              "showing",
+              "hidden",
+              "showing_for_members",
+              "sale_for_members"
+            ]
+          },
+          "limit": {
+            "description": "レスポンスの件数を指定。指定がない場合は50。最大250",
+            "type": "integer",
+            "minimum": -9007199254740991,
+            "maximum": 9007199254740991
+          },
+          "offset": {
+            "description": "指定した数値+1件目以降のデータを返す",
+            "type": "integer",
+            "minimum": -9007199254740991,
+            "maximum": 9007199254740991
+          }
+        },
+        "additionalProperties": false
+      },
+      "annotations": {
+        "readOnlyHint": true,
+        "destructiveHint": false,
+        "idempotentHint": true,
+        "openWorldHint": true
+      }
+    },
+    {
+      "name": "getReviews",
+      "description": "レビュー一覧を取得  レビューの一覧を取得します。",
+      "inputSchema": {
+        "$schema": "http://json-schema.org/draft-07/schema#",
+        "type": "object",
+        "properties": {
+          "limit": {
+            "description": "レスポンスの件数を指定。指定がない場合は10。最大100",
+            "type": "integer",
+            "minimum": -9007199254740991,
+            "maximum": 9007199254740991
+          },
+          "offset": {
+            "description": "指定した数値+1件目以降のデータを返す",
+            "type": "integer",
+            "minimum": -9007199254740991,
+            "maximum": 9007199254740991
+          }
+        },
+        "additionalProperties": false
+      },
+      "annotations": {
+        "readOnlyHint": true,
+        "destructiveHint": false,
+        "idempotentHint": true,
+        "openWorldHint": true
+      }
+    },
+    {
+      "name": "getStocks",
+      "description": "在庫情報の取得  在庫情報を商品名や型番で検索できるAPIです。",
+      "inputSchema": {
+        "$schema": "http://json-schema.org/draft-07/schema#",
+        "type": "object",
+        "properties": {
+          "ids": {
+            "description": "商品IDで検索。カンマ区切りにすることで複数検索が可能",
+            "type": "string"
+          },
+          "category_id_big": {
+            "description": "大カテゴリーIDで検索",
+            "type": "integer",
+            "minimum": -9007199254740991,
+            "maximum": 9007199254740991
+          },
+          "category_id_small": {
+            "description": "小カテゴリーIDで検索",
+            "type": "integer",
+            "minimum": -9007199254740991,
+            "maximum": 9007199254740991
+          },
+          "model_number": {
+            "description": "型番で部分一致検索",
+            "type": "string"
+          },
+          "name": {
+            "description": "商品名で部分一致検索",
+            "type": "string"
+          },
+          "display_state": {
+            "description": "掲載設定で検索  - `showing`: 掲載状態 - `hidden`: 非掲載状態 - `showing_for_members`: 会員にのみ掲載 - `sale_for_members`: 掲載状態だが購入は会員のみ可能 ",
+            "type": "string",
+            "enum": [
+              "showing",
+              "hidden",
+              "showing_for_members",
+              "sale_for_members"
+            ]
+          },
+          "stocks": {
+            "description": "在庫管理している商品のうち、在庫数が指定した数値以下の商品を検索。オプションごとに在庫管理している商品は、オプションごとの在庫数で検索される",
+            "type": "integer",
+            "minimum": -9007199254740991,
+            "maximum": 9007199254740991
+          },
+          "recent_zero_stocks": {
+            "description": "`true` の場合、過去1週間以内にオプションが更新された商品から検索",
+            "type": "boolean"
+          },
+          "fields": {
+            "description": "レスポンスJSONのキーをカンマ区切りで指定",
+            "type": "string"
+          },
+          "limit": {
+            "description": "レスポンスの件数を指定。指定がない場合は10。最大50",
+            "type": "integer",
+            "minimum": -9007199254740991,
+            "maximum": 9007199254740991
+          },
+          "offset": {
+            "description": "指定した数値+1件目以降のデータを返す",
+            "type": "integer",
+            "minimum": -9007199254740991,
+            "maximum": 9007199254740991
+          }
+        },
+        "additionalProperties": false
+      },
+      "annotations": {
+        "readOnlyHint": true,
+        "destructiveHint": false,
+        "idempotentHint": true,
+        "openWorldHint": true
+      }
+    },
+    {
+      "name": "getProductGroups",
+      "description": "商品グループ一覧を取得",
+      "inputSchema": {
+        "$schema": "http://json-schema.org/draft-07/schema#",
+        "type": "object",
+        "properties": {
+          "_dummy": {
+            "description": "Not used",
+            "type": "string"
+          }
+        },
+        "additionalProperties": false
+      },
+      "annotations": {
+        "readOnlyHint": true,
+        "destructiveHint": false,
+        "idempotentHint": true,
+        "openWorldHint": true
+      }
+    },
+    {
+      "name": "createProductGroup",
+      "description": "商品グループの作成  新しい商品グループを作成します",
+      "inputSchema": {
+        "$schema": "http://json-schema.org/draft-07/schema#",
+        "type": "object",
+        "properties": {
+          "group": {
+            "type": "object",
+            "properties": {
+              "name": {
+                "description": "商品グループ名",
+                "type": "string",
+                "maxLength": 100
+              },
+              "expl": {
+                "description": "商品グループ説明",
+                "type": "string"
+              },
+              "display_state": {
+                "description": "掲載設定  - `showing`: 掲載 - `hidden`: 非掲載 - `members_only`: 会員にのみ掲載 ",
+                "type": "string",
+                "enum": [
+                  "showing",
+                  "hidden",
+                  "members_only"
+                ]
+              },
+              "parent_group_id": {
+                "description": "親商品グループID。 特定の商品グループの配下に作成したくない場合は nil を指定してください。 ",
+                "type": "integer",
+                "minimum": -9007199254740991,
+                "maximum": 9007199254740991
+              },
+              "meta_tag": {
+                "description": "SEOメタタグ情報",
+                "type": "object",
+                "properties": {
+                  "title": {
+                    "description": "メタタイトル  HTML `<title>` タグに使用されるタイトル文字列。 HTMLタグは使用できません。 ",
+                    "type": "string",
+                    "maxLength": 255
+                  },
+                  "keywords": {
+                    "description": "メタキーワード  HTML `<meta name=\"keywords\">` タグに使用されるキーワード文字列。 複数のキーワードはカンマで区切って指定します。 HTMLタグは使用できません。 ",
+                    "type": "string",
+                    "maxLength": 65535
+                  },
+                  "description": {
+                    "description": "メタディスクリプション  HTML `<meta name=\"description\">` タグに使用される説明文字列。 検索エンジンの検索結果に表示される要約文として使用されます。 HTMLタグは使用できません。 ",
+                    "type": "string",
+                    "maxLength": 65535
+                  }
+                },
+                "additionalProperties": false
+              }
+            },
+            "additionalProperties": false
+          }
+        },
+        "required": [
+          "group"
+        ],
+        "additionalProperties": false
+      },
+      "annotations": {
+        "readOnlyHint": false,
+        "destructiveHint": true,
+        "idempotentHint": false,
+        "openWorldHint": true
+      }
+    },
+    {
+      "name": "getProductGroup",
+      "description": "商品グループの取得  指定したIDの商品グループを取得します",
+      "inputSchema": {
+        "$schema": "http://json-schema.org/draft-07/schema#",
+        "type": "object",
+        "properties": {
+          "group_id": {
+            "type": "integer",
+            "minimum": -9007199254740991,
+            "maximum": 9007199254740991,
+            "description": "商品グループID"
+          }
+        },
+        "required": [
+          "group_id"
+        ],
+        "additionalProperties": false
+      },
+      "annotations": {
+        "readOnlyHint": true,
+        "destructiveHint": false,
+        "idempotentHint": true,
+        "openWorldHint": true
+      }
+    },
+    {
+      "name": "updateProductGroup",
+      "description": "商品グループの更新  指定したIDの商品グループを更新します",
+      "inputSchema": {
+        "$schema": "http://json-schema.org/draft-07/schema#",
+        "type": "object",
+        "properties": {
+          "group_id": {
+            "type": "integer",
+            "minimum": -9007199254740991,
+            "maximum": 9007199254740991,
+            "description": "商品グループID"
+          },
+          "group": {
+            "type": "object",
+            "properties": {
+              "name": {
+                "description": "商品グループ名",
+                "type": "string",
+                "maxLength": 100
+              },
+              "expl": {
+                "description": "商品グループ説明",
+                "type": "string"
+              },
+              "display_state": {
+                "description": "掲載設定  - `showing`: 掲載 - `hidden`: 非掲載 - `members_only`: 会員にのみ掲載 ",
+                "type": "string",
+                "enum": [
+                  "showing",
+                  "hidden",
+                  "members_only"
+                ]
+              },
+              "meta_tag": {
+                "description": "SEOメタタグ情報",
+                "type": "object",
+                "properties": {
+                  "title": {
+                    "description": "メタタイトル  HTML `<title>` タグに使用されるタイトル文字列。 HTMLタグは使用できません。 ",
+                    "type": "string",
+                    "maxLength": 255
+                  },
+                  "keywords": {
+                    "description": "メタキーワード  HTML `<meta name=\"keywords\">` タグに使用されるキーワード文字列。 複数のキーワードはカンマで区切って指定します。 HTMLタグは使用できません。 ",
+                    "type": "string",
+                    "maxLength": 65535
+                  },
+                  "description": {
+                    "description": "メタディスクリプション  HTML `<meta name=\"description\">` タグに使用される説明文字列。 検索エンジンの検索結果に表示される要約文として使用されます。 HTMLタグは使用できません。 ",
+                    "type": "string",
+                    "maxLength": 65535
+                  }
+                },
+                "additionalProperties": false
+              }
+            },
+            "additionalProperties": false
+          }
+        },
+        "required": [
+          "group_id",
+          "group"
+        ],
+        "additionalProperties": false
+      },
+      "annotations": {
+        "readOnlyHint": false,
+        "destructiveHint": true,
+        "idempotentHint": true,
+        "openWorldHint": true
+      }
+    },
+    {
+      "name": "getProductCategories",
+      "description": "商品カテゴリー一覧を取得",
+      "inputSchema": {
+        "$schema": "http://json-schema.org/draft-07/schema#",
+        "type": "object",
+        "properties": {
+          "_dummy": {
+            "description": "Not used",
+            "type": "string"
+          }
+        },
+        "additionalProperties": false
+      },
+      "annotations": {
+        "readOnlyHint": true,
+        "destructiveHint": false,
+        "idempotentHint": true,
+        "openWorldHint": true
+      }
+    },
+    {
+      "name": "createProductCategory",
+      "description": "大カテゴリーの作成  商品の大カテゴリーを作成します。  注意事項: - カテゴリー名は必須項目です - メタタグのtitle、keywords、descriptionにはHTMLタグを含めることはできません - 表示順は0以上の整数で指定してください",
+      "inputSchema": {
+        "$schema": "http://json-schema.org/draft-07/schema#",
+        "type": "object",
+        "properties": {
+          "category": {
+            "type": "object",
+            "properties": {
+              "name": {
+                "type": "string",
+                "maxLength": 100,
+                "description": "商品カテゴリー名"
+              },
+              "expl": {
+                "description": "商品カテゴリー説明",
+                "type": "string"
+              },
+              "sort": {
+                "description": "表示順  カテゴリーの表示順序を指定します。数値が小さいほど上位に表示されます。 未指定の場合は0が設定されます。 ",
+                "type": "integer",
+                "minimum": 0,
+                "maximum": 9007199254740991
+              },
+              "display_state": {
+                "description": "掲載設定  - `showing`: 掲載（デフォルト） - `hidden`: 非掲載 - `members_only`: 会員のみ掲載 ",
+                "type": "string",
+                "enum": [
+                  "showing",
+                  "hidden",
+                  "members_only"
+                ]
+              },
+              "meta_tag": {
+                "description": "SEOメタタグ情報",
+                "type": "object",
+                "properties": {
+                  "title": {
+                    "description": "メタタイトル  HTML `<title>` タグに使用されるタイトル文字列。 HTMLタグは使用できません。 ",
+                    "type": "string",
+                    "maxLength": 255
+                  },
+                  "keywords": {
+                    "description": "メタキーワード  HTML `<meta name=\"keywords\">` タグに使用されるキーワード文字列。 複数のキーワードはカンマで区切って指定します。 HTMLタグは使用できません。 ",
+                    "type": "string"
+                  },
+                  "description": {
+                    "description": "メタディスクリプション  HTML `<meta name=\"description\">` タグに使用される説明文字列。 検索エンジンの検索結果に表示される要約文として使用されます。 HTMLタグは使用できません。 ",
+                    "type": "string"
+                  }
+                },
+                "additionalProperties": false
+              }
+            },
+            "required": [
+              "name"
+            ],
+            "additionalProperties": false
+          }
+        },
+        "required": [
+          "category"
+        ],
+        "additionalProperties": false
+      },
+      "annotations": {
+        "readOnlyHint": false,
+        "destructiveHint": true,
+        "idempotentHint": false,
+        "openWorldHint": true
+      }
+    },
+    {
+      "name": "updateProductCategory",
+      "description": "大カテゴリーの更新  指定したIDの大カテゴリーを更新します。  注意事項: - メタタグのtitle、keywords、descriptionにはHTMLタグを含めることはできません - 表示順は0以上の整数で指定してください",
+      "inputSchema": {
+        "$schema": "http://json-schema.org/draft-07/schema#",
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "integer",
+            "minimum": -9007199254740991,
+            "maximum": 9007199254740991,
+            "description": "更新する大カテゴリーのID"
+          },
+          "category": {
+            "type": "object",
+            "properties": {
+              "name": {
+                "description": "商品カテゴリー名",
+                "type": "string",
+                "maxLength": 100
+              },
+              "expl": {
+                "description": "商品カテゴリー説明",
+                "type": "string"
+              },
+              "sort": {
+                "description": "表示順  カテゴリーの表示順序を指定します。数値が小さいほど上位に表示されます。 未指定の場合は0が設定されます。 ",
+                "type": "integer",
+                "minimum": 0,
+                "maximum": 9007199254740991
+              },
+              "display_state": {
+                "description": "掲載設定  - `showing`: 掲載 - `hidden`: 非掲載 - `members_only`: 会員にのみ掲載 ",
+                "type": "string",
+                "enum": [
+                  "showing",
+                  "hidden",
+                  "members_only"
+                ]
+              },
+              "meta_tag": {
+                "description": "SEOメタタグ情報",
+                "type": "object",
+                "properties": {
+                  "title": {
+                    "description": "メタタイトル  HTML `<title>` タグに使用されるタイトル文字列。 HTMLタグは使用できません。 ",
+                    "type": "string",
+                    "maxLength": 255
+                  },
+                  "keywords": {
+                    "description": "メタキーワード  HTML `<meta name=\"keywords\">` タグに使用されるキーワード文字列。 複数のキーワードはカンマで区切って指定します。 HTMLタグは使用できません。 ",
+                    "type": "string",
+                    "maxLength": 65535
+                  },
+                  "description": {
+                    "description": "メタディスクリプション  HTML `<meta name=\"description\">` タグに使用される説明文字列。 検索エンジンの検索結果に表示される要約文として使用されます。 HTMLタグは使用できません。 ",
+                    "type": "string",
+                    "maxLength": 65535
+                  }
+                },
+                "additionalProperties": false
+              }
+            },
+            "additionalProperties": false
+          }
+        },
+        "required": [
+          "id",
+          "category"
+        ],
+        "additionalProperties": false
+      },
+      "annotations": {
+        "readOnlyHint": false,
+        "destructiveHint": true,
+        "idempotentHint": true,
+        "openWorldHint": true
+      }
+    },
+    {
+      "name": "createProductCategoryChild",
+      "description": "小カテゴリーの作成  指定した大カテゴリー配下に小カテゴリーを作成します。  注意事項: - メタタグのtitle、keywords、descriptionにはHTMLタグを含めることはできません - 表示順は0以上の整数で指定してください",
+      "inputSchema": {
+        "$schema": "http://json-schema.org/draft-07/schema#",
+        "type": "object",
+        "properties": {
+          "category_id": {
+            "type": "integer",
+            "minimum": -9007199254740991,
+            "maximum": 9007199254740991,
+            "description": "親となる商品カテゴリーのID（大カテゴリーID）"
+          },
+          "category": {
+            "type": "object",
+            "properties": {
+              "name": {
+                "type": "string",
+                "maxLength": 100,
+                "description": "商品カテゴリー名"
+              },
+              "expl": {
+                "description": "商品カテゴリー説明",
+                "type": "string"
+              },
+              "sort": {
+                "description": "表示順  カテゴリーの表示順序を指定します。数値が小さいほど上位に表示されます。 未指定の場合は0が設定されます。 ",
+                "type": "integer",
+                "minimum": 0,
+                "maximum": 9007199254740991
+              },
+              "display_state": {
+                "description": "掲載設定  - `showing`: 掲載（デフォルト） - `hidden`: 非掲載 - `members_only`: 会員のみ掲載 ",
+                "type": "string",
+                "enum": [
+                  "showing",
+                  "hidden",
+                  "members_only"
+                ]
+              },
+              "meta_tag": {
+                "description": "SEOメタタグ情報",
+                "type": "object",
+                "properties": {
+                  "title": {
+                    "description": "メタタイトル  HTML `<title>` タグに使用されるタイトル文字列。 HTMLタグは使用できません。 ",
+                    "type": "string",
+                    "maxLength": 255
+                  },
+                  "keywords": {
+                    "description": "メタキーワード  HTML `<meta name=\"keywords\">` タグに使用されるキーワード文字列。 複数のキーワードはカンマで区切って指定します。 HTMLタグは使用できません。 ",
+                    "type": "string"
+                  },
+                  "description": {
+                    "description": "メタディスクリプション  HTML `<meta name=\"description\">` タグに使用される説明文字列。 検索エンジンの検索結果に表示される要約文として使用されます。 HTMLタグは使用できません。 ",
+                    "type": "string"
+                  }
+                },
+                "additionalProperties": false
+              }
+            },
+            "required": [
+              "name"
+            ],
+            "additionalProperties": false
+          }
+        },
+        "required": [
+          "category_id",
+          "category"
+        ],
+        "additionalProperties": false
+      },
+      "annotations": {
+        "readOnlyHint": false,
+        "destructiveHint": true,
+        "idempotentHint": false,
+        "openWorldHint": true
+      }
+    },
+    {
+      "name": "updateProductCategoryChild",
+      "description": "小カテゴリーの更新  指定したIDの小カテゴリーを更新します。  注意事項: - メタタグのtitle、keywords、descriptionにはHTMLタグを含めることはできません - 表示順は0以上の整数で指定してください",
+      "inputSchema": {
+        "$schema": "http://json-schema.org/draft-07/schema#",
+        "type": "object",
+        "properties": {
+          "category_id": {
+            "type": "integer",
+            "minimum": -9007199254740991,
+            "maximum": 9007199254740991,
+            "description": "更新する小カテゴリーの親となる大カテゴリーID"
+          },
+          "id": {
+            "type": "integer",
+            "minimum": -9007199254740991,
+            "maximum": 9007199254740991,
+            "description": "更新する小カテゴリーのID"
+          },
+          "category": {
+            "type": "object",
+            "properties": {
+              "name": {
+                "description": "商品カテゴリー名",
+                "type": "string",
+                "maxLength": 100
+              },
+              "expl": {
+                "description": "商品カテゴリー説明",
+                "type": "string"
+              },
+              "sort": {
+                "description": "表示順  カテゴリーの表示順序を指定します。数値が小さいほど上位に表示されます。 未指定の場合は0が設定されます。 ",
+                "type": "integer",
+                "minimum": 0,
+                "maximum": 9007199254740991
+              },
+              "display_state": {
+                "description": "掲載設定  - `showing`: 掲載 - `hidden`: 非掲載 - `members_only`: 会員にのみ掲載 ",
+                "type": "string",
+                "enum": [
+                  "showing",
+                  "hidden",
+                  "members_only"
+                ]
+              },
+              "meta_tag": {
+                "description": "SEOメタタグ情報",
+                "type": "object",
+                "properties": {
+                  "title": {
+                    "description": "メタタイトル  HTML `<title>` タグに使用されるタイトル文字列。 HTMLタグは使用できません。 ",
+                    "type": "string",
+                    "maxLength": 255
+                  },
+                  "keywords": {
+                    "description": "メタキーワード  HTML `<meta name=\"keywords\">` タグに使用されるキーワード文字列。 複数のキーワードはカンマで区切って指定します。 HTMLタグは使用できません。 ",
+                    "type": "string",
+                    "maxLength": 65535
+                  },
+                  "description": {
+                    "description": "メタディスクリプション  HTML `<meta name=\"description\">` タグに使用される説明文字列。 検索エンジンの検索結果に表示される要約文として使用されます。 HTMLタグは使用できません。 ",
+                    "type": "string",
+                    "maxLength": 65535
+                  }
+                },
+                "additionalProperties": false
+              }
+            },
+            "additionalProperties": false
+          }
+        },
+        "required": [
+          "category_id",
+          "id",
+          "category"
+        ],
+        "additionalProperties": false
+      },
+      "annotations": {
+        "readOnlyHint": false,
+        "destructiveHint": true,
+        "idempotentHint": true,
+        "openWorldHint": true
+      }
+    },
+    {
+      "name": "getPayments",
+      "description": "決済設定の一覧を取得",
+      "inputSchema": {
+        "$schema": "http://json-schema.org/draft-07/schema#",
+        "type": "object",
+        "properties": {
+          "_dummy": {
+            "description": "Not used",
+            "type": "string"
+          }
+        },
+        "additionalProperties": false
+      },
+      "annotations": {
+        "readOnlyHint": true,
+        "destructiveHint": false,
+        "idempotentHint": true,
+        "openWorldHint": true
+      }
+    },
+    {
+      "name": "getDeliveries",
+      "description": "配送方法一覧を取得",
+      "inputSchema": {
+        "$schema": "http://json-schema.org/draft-07/schema#",
+        "type": "object",
+        "properties": {
+          "_dummy": {
+            "description": "Not used",
+            "type": "string"
+          }
+        },
+        "additionalProperties": false
+      },
+      "annotations": {
+        "readOnlyHint": true,
+        "destructiveHint": false,
+        "idempotentHint": true,
+        "openWorldHint": true
+      }
+    },
+    {
+      "name": "getDeliveryDateSetting",
+      "description": "配送日時設定を取得",
+      "inputSchema": {
+        "$schema": "http://json-schema.org/draft-07/schema#",
+        "type": "object",
+        "properties": {
+          "_dummy": {
+            "description": "Not used",
+            "type": "string"
+          }
+        },
+        "additionalProperties": false
+      },
+      "annotations": {
+        "readOnlyHint": true,
+        "destructiveHint": false,
+        "idempotentHint": true,
+        "openWorldHint": true
+      }
+    },
+    {
+      "name": "getGift",
+      "description": "ギフト設定を取得",
+      "inputSchema": {
+        "$schema": "http://json-schema.org/draft-07/schema#",
+        "type": "object",
+        "properties": {
+          "_dummy": {
+            "description": "Not used",
+            "type": "string"
+          }
+        },
+        "additionalProperties": false
+      },
+      "annotations": {
+        "readOnlyHint": true,
+        "destructiveHint": false,
+        "idempotentHint": true,
+        "openWorldHint": true
+      }
+    },
+    {
+      "name": "getCoupons",
+      "description": "ショップクーポンの一覧を取得",
+      "inputSchema": {
+        "$schema": "http://json-schema.org/draft-07/schema#",
+        "type": "object",
+        "properties": {
+          "_dummy": {
+            "description": "Not used",
+            "type": "string"
+          }
+        },
+        "additionalProperties": false
+      },
+      "annotations": {
+        "readOnlyHint": true,
+        "destructiveHint": false,
+        "idempotentHint": true,
+        "openWorldHint": true
+      }
+    },
+    {
+      "name": "createCoupon",
+      "description": "ショップクーポンの作成",
+      "inputSchema": {
+        "$schema": "http://json-schema.org/draft-07/schema#",
+        "type": "object",
+        "properties": {
+          "shop_coupon": {
+            "type": "object",
+            "properties": {
+              "name": {
+                "description": "クーポン名",
+                "type": "string"
+              },
+              "code": {
+                "type": "string",
+                "description": "クーポンコード"
+              },
+              "coupon_type": {
+                "type": "string",
+                "enum": [
+                  "amount",
+                  "rate",
+                  "delivery_charge"
+                ],
+                "description": "クーポン種別  - `amount`: 定額 - `rate`: 定率 - `delivery_charge`: 送料無料 "
+              },
+              "discount_amount": {
+                "description": "割引金額または割引率  - coupon_type: `amount` の場合は円単位の金額（例: 100 = 100円割引） - coupon_type: `rate` の場合は%単位の割引率（例: 10 = 10%割引） - coupon_type: `delivery_charge` の場合は0を指定（送料から自動計算） ",
+                "type": "integer",
+                "minimum": -9007199254740991,
+                "maximum": 9007199254740991
+              },
+              "minimum_amount": {
+                "description": "利用最低額",
+                "type": "integer",
+                "minimum": -9007199254740991,
+                "maximum": 9007199254740991
+              },
+              "starts_at": {
+                "type": "string",
+                "description": "利用開始日（YYYY-MM-DD形式で指定。ends_atより前の日付である必要があります）"
+              },
+              "ends_at": {
+                "type": "string",
+                "description": "利用終了日（YYYY-MM-DD形式で指定。starts_atより後の日付である必要があります）"
+              },
+              "total_usage_limit": {
+                "description": "総利用可能数",
+                "type": "integer",
+                "minimum": -9007199254740991,
+                "maximum": 9007199254740991
+              },
+              "usage_limit": {
+                "description": "ユーザ毎の利用可能数  - `indisposable`: 無制限 - `disposable`: 一度のみ ",
+                "type": "string",
+                "enum": [
+                  "indisposable",
+                  "disposable"
+                ]
+              },
+              "group_limit_type": {
+                "description": "商品グループによる制限  - `none`: 無制限（group_idsは無視される） - `including`: 指定したgroup_idsに含まれる商品のみ対象 - `excluding`: 指定したgroup_idsに含まれる商品を除外 ",
+                "type": "string",
+                "enum": [
+                  "none",
+                  "including",
+                  "excluding"
+                ]
+              },
+              "status": {
+                "description": "クーポンの利用可否  - `unavailable`: 利用不可 - `available`: 利用可能 ",
+                "type": "string",
+                "enum": [
+                  "unavailable",
+                  "available"
+                ]
+              },
+              "group_ids": {
+                "description": "商品グループID配列（group_limit_typeがnone以外の場合に使用）",
+                "type": "array",
+                "items": {
+                  "type": "integer",
+                  "minimum": -9007199254740991,
+                  "maximum": 9007199254740991
+                }
+              }
+            },
+            "required": [
+              "code",
+              "coupon_type",
+              "starts_at",
+              "ends_at"
+            ],
+            "additionalProperties": false
+          }
+        },
+        "additionalProperties": false
+      },
+      "annotations": {
+        "readOnlyHint": false,
+        "destructiveHint": true,
+        "idempotentHint": false,
+        "openWorldHint": true
+      }
+    },
+    {
+      "name": "getCoupon",
+      "description": "ショップクーポンの取得",
+      "inputSchema": {
+        "$schema": "http://json-schema.org/draft-07/schema#",
+        "type": "object",
+        "properties": {
+          "coupon_id": {
+            "type": "integer",
+            "minimum": -9007199254740991,
+            "maximum": 9007199254740991,
+            "description": "Coupon ID"
+          }
+        },
+        "required": [
+          "coupon_id"
+        ],
+        "additionalProperties": false
+      },
+      "annotations": {
+        "readOnlyHint": true,
+        "destructiveHint": false,
+        "idempotentHint": true,
+        "openWorldHint": true
+      }
+    },
+    {
+      "name": "deleteCoupon",
+      "description": "ショップクーポンの削除",
+      "inputSchema": {
+        "$schema": "http://json-schema.org/draft-07/schema#",
+        "type": "object",
+        "properties": {
+          "coupon_id": {
+            "type": "integer",
+            "minimum": -9007199254740991,
+            "maximum": 9007199254740991,
+            "description": "Coupon ID"
+          }
+        },
+        "required": [
+          "coupon_id"
+        ],
+        "additionalProperties": false
+      },
+      "annotations": {
+        "readOnlyHint": false,
+        "destructiveHint": true,
+        "idempotentHint": true,
+        "openWorldHint": true
+      }
+    },
+    {
+      "name": "updateCoupon",
+      "description": "ショップクーポンの更新",
+      "inputSchema": {
+        "$schema": "http://json-schema.org/draft-07/schema#",
+        "type": "object",
+        "properties": {
+          "coupon_id": {
+            "type": "integer",
+            "minimum": -9007199254740991,
+            "maximum": 9007199254740991,
+            "description": "Coupon ID"
+          },
+          "shop_coupon": {
+            "type": "object",
+            "properties": {
+              "name": {
+                "description": "クーポン名",
+                "type": "string"
+              },
+              "code": {
+                "description": "クーポンコード",
+                "type": "string"
+              },
+              "coupon_type": {
+                "description": "クーポン種別  - `amount`: 定額 - `rate`: 定率 - `delivery_charge`: 送料無料 ",
+                "type": "string",
+                "enum": [
+                  "amount",
+                  "rate",
+                  "delivery_charge"
+                ]
+              },
+              "discount_amount": {
+                "description": "割引金額または割引率  - coupon_type: `amount` の場合は円単位の金額（例: 50 = 50円割引） - coupon_type: `rate` の場合は%単位の割引率（例: 10 = 10%割引） - coupon_type: `delivery_charge` の場合は0を指定（送料から自動計算） ",
+                "type": "integer",
+                "minimum": -9007199254740991,
+                "maximum": 9007199254740991
+              },
+              "minimum_amount": {
+                "description": "利用最低額",
+                "type": "integer",
+                "minimum": -9007199254740991,
+                "maximum": 9007199254740991
+              },
+              "starts_at": {
+                "description": "利用開始日（YYYY-MM-DD形式で指定。ends_atより前の日付である必要があります）",
+                "type": "string"
+              },
+              "ends_at": {
+                "description": "利用終了日（YYYY-MM-DD形式で指定。starts_atより後の日付である必要があります）",
+                "type": "string"
+              },
+              "total_usage_limit": {
+                "description": "総利用可能数（0は無制限を意味します）",
+                "type": "integer",
+                "minimum": -9007199254740991,
+                "maximum": 9007199254740991
+              },
+              "usage_limit": {
+                "description": "ユーザ毎の利用可能数  - `indisposable`: 無制限 - `disposable`: 一度のみ ",
+                "type": "string",
+                "enum": [
+                  "indisposable",
+                  "disposable"
+                ]
+              },
+              "group_limit_type": {
+                "description": "商品グループによる制限  - `none`: 無制限（group_idsは無視される） - `including`: 指定したgroup_idsに含まれる商品のみ対象 - `excluding`: 指定したgroup_idsに含まれる商品を除外 ",
+                "type": "string",
+                "enum": [
+                  "none",
+                  "including",
+                  "excluding"
+                ]
+              },
+              "status": {
+                "description": "クーポンの利用可否  - `unavailable`: 利用不可 - `available`: 利用可能 ",
+                "type": "string",
+                "enum": [
+                  "unavailable",
+                  "available"
+                ]
+              },
+              "group_ids": {
+                "description": "商品グループID配列（group_limit_typeがnone以外の場合に使用）",
+                "type": "array",
+                "items": {
+                  "type": "integer",
+                  "minimum": -9007199254740991,
+                  "maximum": 9007199254740991
+                }
+              }
+            },
+            "additionalProperties": false
+          }
+        },
+        "required": [
+          "coupon_id"
+        ],
+        "additionalProperties": false
+      },
+      "annotations": {
+        "readOnlyHint": false,
+        "destructiveHint": true,
+        "idempotentHint": true,
+        "openWorldHint": true
+      }
+    },
+    {
+      "name": "getTemplates",
+      "description": "テンプレート一覧を取得  作成済みのテンプレートの一覧を取得します。",
+      "inputSchema": {
+        "$schema": "http://json-schema.org/draft-07/schema#",
+        "type": "object",
+        "properties": {
+          "_dummy": {
+            "description": "Not used",
+            "type": "string"
+          }
+        },
+        "additionalProperties": false
+      },
+      "annotations": {
+        "readOnlyHint": true,
+        "destructiveHint": false,
+        "idempotentHint": true,
+        "openWorldHint": true
+      }
+    },
+    {
+      "name": "getTemplatePreview",
+      "description": "テンプレートプレビュー用URLを取得  指定されたテンプレートをプレビュー表示するためのURLを取得します。 有効期限は発行から1時間です。",
+      "inputSchema": {
+        "$schema": "http://json-schema.org/draft-07/schema#",
+        "type": "object",
+        "properties": {
+          "template_id": {
+            "type": "integer",
+            "minimum": -9007199254740991,
+            "maximum": 9007199254740991,
+            "description": "テンプレートID"
+          }
+        },
+        "required": [
+          "template_id"
+        ],
+        "additionalProperties": false
+      },
+      "annotations": {
+        "readOnlyHint": true,
+        "destructiveHint": false,
+        "idempotentHint": true,
+        "openWorldHint": true
+      }
+    },
+    {
+      "name": "getTemplatePage",
+      "description": "テンプレートページの取得  指定テンプレートの指定ページ種別のHTML/CSSを取得します。",
+      "inputSchema": {
+        "$schema": "http://json-schema.org/draft-07/schema#",
+        "type": "object",
+        "properties": {
+          "template_id": {
+            "type": "integer",
+            "minimum": -9007199254740991,
+            "maximum": 9007199254740991,
+            "description": "テンプレートID"
+          },
+          "page_type": {
+            "type": "string",
+            "enum": [
+              "index",
+              "top",
+              "product_list",
+              "product",
+              "shopkeeper",
+              "product_srh",
+              "option_stock",
+              "privacy"
+            ],
+            "description": "ページ種別  - `index`: 共通 - `top`: トップ - `product_list`: 商品一覧 - `product`: 商品詳細 - `shopkeeper`: 特定商取引 - `product_srh`: 商品検索結果 - `option_stock`: オプション在庫・値段表 - `privacy`: プライバシーポリシー "
+          }
+        },
+        "required": [
+          "template_id",
+          "page_type"
+        ],
+        "additionalProperties": false
+      },
+      "annotations": {
+        "readOnlyHint": true,
+        "destructiveHint": false,
+        "idempotentHint": true,
+        "openWorldHint": true
+      }
+    },
+    {
+      "name": "updateTemplatePage",
+      "description": "テンプレートページの更新  指定テンプレートの指定ページ種別のHTML/CSSを更新します。 更新時にはテンプレートの変更履歴が記録され、親テンプレートの`update_date`も更新されます。",
+      "inputSchema": {
+        "$schema": "http://json-schema.org/draft-07/schema#",
+        "type": "object",
+        "properties": {
+          "template_id": {
+            "type": "integer",
+            "minimum": -9007199254740991,
+            "maximum": 9007199254740991,
+            "description": "テンプレートID"
+          },
+          "page_type": {
+            "type": "string",
+            "enum": [
+              "index",
+              "top",
+              "product_list",
+              "product",
+              "shopkeeper",
+              "product_srh",
+              "option_stock",
+              "privacy"
+            ],
+            "description": "ページ種別  - `index`: 共通 - `top`: トップ - `product_list`: 商品一覧 - `product`: 商品詳細 - `shopkeeper`: 特定商取引 - `product_srh`: 商品検索結果 - `option_stock`: オプション在庫・値段表 - `privacy`: プライバシーポリシー "
+          },
+          "template_page": {
+            "type": "object",
+            "properties": {
+              "html": {
+                "description": "HTMLコンテンツ。デザインテンプレートで利用できる独自タグを含めることが可能。 `index`（共通）ページ種別の場合、`<{include file = $file_name}>`タグを含める必要がある。 カラーミーショップで契約中のプランがプラチナ、プレミアムの場合、最大120,000文字。そのほかは、最大65,530文字。 ",
+                "type": "string"
+              },
+              "css": {
+                "description": "CSSコンテンツ。最大65,535文字",
+                "type": "string"
+              }
+            },
+            "additionalProperties": false
+          }
+        },
+        "required": [
+          "template_id",
+          "page_type",
+          "template_page"
+        ],
+        "additionalProperties": false
+      },
+      "annotations": {
+        "readOnlyHint": false,
+        "destructiveHint": true,
+        "idempotentHint": true,
+        "openWorldHint": true
+      }
+    }
+  ]
+}

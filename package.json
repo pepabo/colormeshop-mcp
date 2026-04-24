@@ -1,0 +1,34 @@
+{
+  "name": "@pepabo/colormeshop-mcp",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Introspection-only MCP server for Color Me Shop, used for MCP registry indexing.",
+  "type": "module",
+  "license": "MIT",
+  "homepage": "https://github.com/pepabo/colormeshop-mcp",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/pepabo/colormeshop-mcp.git"
+  },
+  "bin": {
+    "colormeshop-mcp": "bin/colormeshop-mcp.js"
+  },
+  "files": [
+    "bin",
+    "lib",
+    "tools.json",
+    "README.md",
+    "README.ja.md",
+    "LICENSE",
+    "SECURITY.md"
+  ],
+  "engines": {
+    "node": ">=24"
+  },
+  "dependencies": {
+    "@modelcontextprotocol/sdk": "^1.27.1"
+  },
+  "scripts": {
+    "test": "node --test"
+  }
+}
