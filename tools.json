@@ -168,7 +168,7 @@
     },
     {
       "name": "getSale",
-      "description": "受注データの取得",
+      "description": "指定した受注IDの受注詳細を 1 件取得します。sale_id(受注作成時に採番される整数 ID)を渡すと、商品明細・配送先・決済状況・キャンセル状況・送料・クーポン適用を含む受注オブジェクトが返ります。特定受注を深掘りする用途で、複数受注の条件検索は getSales、期間集計は statSale、受注への書き込みは updateSale / cancelSale / sendSalesMail を使ってください。",
       "inputSchema": {
         "$schema": "http://json-schema.org/draft-07/schema#",
         "type": "object",
@@ -685,7 +685,7 @@
     },
     {
       "name": "getCustomer",
-      "description": "顧客データの取得  顧客データを取得します。",
+      "description": "指定した顧客IDの会員顧客 1 件を取得します。customer_id(会員登録時に採番される整数 ID)から、氏名・連絡先・住所・ポイント残高・会員ランクを含む会員オブジェクトが返ります。条件付き一覧は getCustomers、ポイント操作は postCustomerPoints、会員ランク変更は updateCustomerMembership を使用。ゲスト購入者(会員未登録)は取得できません(受注から氏名等を引きたい場合は getSale を使用)。",
       "inputSchema": {
         "$schema": "http://json-schema.org/draft-07/schema#",
         "type": "object",
@@ -1085,7 +1085,7 @@
     },
     {
       "name": "postProducts",
-      "description": "商品データの追加",
+      "description": "新規商品をショップに登録し、作成された product_id と商品オブジェクトを返します。product に name・price(定価)・sales_price(販売価格、実際にカートで適用される値)・display_state(掲載設定: showing / hidden / showing_for_members / sale_for_members)などを指定します。display_state の省略時既定は仕様書で未定義のため、公開するなら明示指定してください。作成後の在庫・画像・カテゴリ・グループ所属の設定および既存商品の編集は updateProduct、カテゴリ管理は updateProductCategory、一覧取得は getProducts を使用。",
       "inputSchema": {
         "$schema": "http://json-schema.org/draft-07/schema#",
         "type": "object",
@@ -1205,7 +1205,7 @@
     },
     {
       "name": "updateProduct",
-      "description": "商品データの更新",
+      "description": "既存商品の任意のフィールドを部分更新し、更新後の商品オブジェクトを返します。product_id で対象を特定し、product に変更したいフィールドだけを指定してください(未指定フィールドは変更されません)。在庫 stocks は整数、または increment フィールドで増減を指定でき(負値可、リトライすると二重加算の可能性あり)、グループ所属は product.group_ids で更新します。新規作成は postProducts、カテゴリ所属は updateProductCategory、グループ自体の設定は updateProductGroup を使用してください。",
       "inputSchema": {
         "$schema": "http://json-schema.org/draft-07/schema#",
         "type": "object",
@@ -1736,7 +1736,7 @@
     },
     {
       "name": "createProductGroup",
-      "description": "商品グループの作成  新しい商品グループを作成します",
+      "description": "新しい商品グループ(関連商品をまとめて表示する集合、例: 「セール対象」「新作コレクション」)を作成し、作成された group_id を含むグループオブジェクトを返します。group の name が必須、display_state・parent_group_id(親グループ配下に入れる場合)・meta_tag(SEO 用メタタグ)・expl(説明文)は任意。本ツールは「箱」を作るだけで、商品の所属づけは各商品に対して updateProduct の product.group_ids を使ってください。既存グループの編集は updateProductGroup、階層カテゴリ(大/小分類)は createProductCategory を使用。",
       "inputSchema": {
         "$schema": "http://json-schema.org/draft-07/schema#",
         "type": "object",
@@ -2351,7 +2351,7 @@
     },
     {
       "name": "createCoupon",
-      "description": "ショップクーポンの作成",
+      "description": "新規ショップクーポン(チェックアウト時に顧客がコード入力して使う値引き)を作成し、作成された coupon_id を含むクーポンオブジェクトを返します。shop_coupon の必須項目は code・coupon_type(amount=定額円引き / rate=定率% / delivery_charge=送料無料)・starts_at・ends_at で、discount_amount の単位は coupon_type が amount なら円、rate なら % に変わります。minimum_amount(最低購入金額)・対象商品の絞り込み(group_limit_type / group_ids)・利用回数制限(total_usage_limit 等)も指定可。変更は updateCoupon、削除は deleteCoupon、参照は getCoupons / getCoupon を使用。",
       "inputSchema": {
         "$schema": "http://json-schema.org/draft-07/schema#",
         "type": "object",
@@ -2509,7 +2509,7 @@
     },
     {
       "name": "updateCoupon",
-      "description": "ショップクーポンの更新",
+      "description": "既存ショップクーポンの設定を部分更新し、更新後のクーポンオブジェクトを返します(未指定フィールドは変更されません)。coupon_id で対象を特定し、shop_coupon に変更したいフィールド(割引率・有効期限・利用条件・掲載状態など)だけを渡してください。discount_amount の単位は coupon_type により円(amount)または %(rate)に変わるため、coupon_type を変える際は discount_amount も合わせて見直してください。クーポンコード code 自体は変更可能ですが、既発行分の混乱回避のため運用上は推奨しません。新規作成は createCoupon、削除は deleteCoupon、参照は getCoupon を使用。",
       "inputSchema": {
         "$schema": "http://json-schema.org/draft-07/schema#",
         "type": "object",
