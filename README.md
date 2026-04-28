@@ -12,7 +12,7 @@ Run your online store through natural conversation with AI. "Show me today's unp
 https://agent.colorme.app/api/mcp
 ```
 
-Transport: Streamable HTTP. Authentication: OAuth 2.0 with Dynamic Client Registration (handled automatically by supported clients).
+Transport: Streamable HTTP. Authentication: OAuth 2.1 with Dynamic Client Registration (handled automatically by supported clients).
 
 ## Features
 
